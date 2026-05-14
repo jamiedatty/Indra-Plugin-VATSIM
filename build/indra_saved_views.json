@@ -1,0 +1,11 @@
+[
+ {"button":"S","name":"View S","zoomNm":120,"centerLat":36.692194444444,"centerLon":3.2151111111111},
+{"button":"0","name":"View 0","zoomNm":80,"centerLat":36.692194444444,"centerLon":3.2151111111111},
+{"button":"1/2","name":"View 1/2","zoomNm":60,"centerLat":36.692194444444,"centerLon":3.2151111111111},
+{"button":"1","name":"View 1","zoomNm":100,"centerLat":36.692194444444,"centerLon":3.2151111111111},
+{"button":"3","name":"View 3","zoomNm":150,"centerLat":36.692194444444,"centerLon":3.2151111111111},
+{"button":"5","name":"View 5","zoomNm":200,"centerLat":36.692194444444,"centerLon":3.2151111111111},
+{"button":"8","name":"View 8","zoomNm":250,"centerLat":36.692194444444,"centerLon":3.2151111111111},
+ {"button":"VIEW1","name":"View 1","zoomNm":120,"centerLat":36.692194444444,"centerLon":3.2151111111111},
+{"button":"VIEW2","name":"View 2","zoomNm":300,"centerLat":36.692194444444,"centerLon":3.2151111111111}
+]
