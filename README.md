@@ -28,7 +28,7 @@ An example image is shown bellow with the usage of each button
 <img width="2000" height="50" alt="image Cropped" src="https://github.com/user-attachments/assets/4c73309c-6cb8-4fab-aef9-e8a5af9a5f35" />
 
 ---
-Currently (Version v1.0.4) some buttons do not work, a list is shown bellow:
+Currently (Version v0.1.4) some buttons do not work, a list is shown bellow:
 
 - Executive / Planner - Opens the vacs menu where the user can call people, take incoming calls and hang up
 - ARR / DEP - filter showing arrivals / departures (only works for APP / TWR)
