@@ -1,45 +1,20 @@
 {
-<<<<<<< Updated upstream
-  "contacts": [
+  "DAAG_TWR": [
     {
       "name": "DAAG_TWR",
       "station": "DAAG_TWR"
     },
     {
-=======
-  "DAAG_APP": {
-    "contacts": [
-      {
-        "name": "DAAG_TWR",
-        "station": "DAAG_TWR"
-      },
-      {
->>>>>>> Stashed changes
       "name": "DAAA_NC_CTR",
       "station": "DAAA_NC_CTR"
-    },
-    {
-      "name": "DAAG_GND",
-      "station": "DAAG_GND"
-<<<<<<< Updated upstream
-    }
-  ]
-}
-=======
     },
     {
       "name": "OOMS_APP",
       "station": "OOMS_APP"
     },
-        {
-      "name": "GMMM_M_CTR",
-      "station": "GMMM_M_CTR"
-    },
-            {
-      "name": "FVRG_TWR",
-      "station": "FVRG_TWR"
+    {
+      "name": "OOMS_APP",
+      "station": "OOMS_APP"
     }
   ]
 }
-}
->>>>>>> Stashed changes

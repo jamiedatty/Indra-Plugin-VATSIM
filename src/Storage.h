@@ -22,8 +22,6 @@ struct Contact { std::string name, station; };
 
 std::vector<Contact> loadContactsJson(const std::string &filename = "settings.json");
 
-<<<<<<< Updated upstream
-=======
 enum class VacsCallUiState
 {
     Idle,
@@ -70,7 +68,6 @@ private:
     std::string nextId();
 };
 
->>>>>>> Stashed changes
 void vacsCall(const std::string &station);
 
 } // namespace Indra

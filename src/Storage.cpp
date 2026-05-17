@@ -224,6 +224,18 @@ std::vector<Contact> parseContactsArray(const nlohmann::json &items)
     return result;
 }
 
+nlohmann::json::const_iterator findJsonKeyCaseInsensitive(const nlohmann::json &object,
+                                                          const char *key)
+{
+    if (!object.is_object() || !key) return object.end();
+    for (auto it = object.begin(); it != object.end(); ++it)
+    {
+        if (_stricmp(it.key().c_str(), key) == 0)
+            return it;
+    }
+    return object.end();
+}
+
 struct ContactsParseResult
 {
     ScopedParseKind kind = ScopedParseKind::NoData;
@@ -241,7 +253,7 @@ ContactsParseResult parseContactsJsonText(const std::string &text)
         nlohmann::json selected = findPositionNode(root, g_activeDataPosition);
         if (selected.is_object())
         {
-            auto contacts = selected.find("contacts");
+            auto contacts = findJsonKeyCaseInsensitive(selected, "contacts");
             if (contacts != selected.end())
             {
                 result.kind = ScopedParseKind::ScopedMatch;
@@ -250,7 +262,7 @@ ContactsParseResult parseContactsJsonText(const std::string &text)
             }
         }
 
-        auto contacts = root.find("contacts");
+        auto contacts = findJsonKeyCaseInsensitive(root, "contacts");
         if (contacts != root.end())
         {
             result.kind = ScopedParseKind::LegacyRoot;
@@ -512,54 +524,6 @@ void saveViewToJson(const std::string &button, const ViewDef &view)
 
 std::vector<Contact> loadContactsJson(const std::string &filename)
 {
-<<<<<<< Updated upstream
-    std::vector<Contact> result;
-
-    std::string json = readFile(dataDirectory() + "\\" + filename);
-    if (json.empty()) return result;
-
-    std::string arrayToken = "\"contacts\"";
-    std::size_t arrayPos = json.find(arrayToken);
-    if (arrayPos == std::string::npos) return result;
-
-    std::size_t bracketOpen = json.find('[', arrayPos);
-    if (bracketOpen == std::string::npos) return result;
-
-    std::size_t bracketClose = json.find(']', bracketOpen);
-    if (bracketClose == std::string::npos) return result;
-
-    std::string arrayBody = json.substr(bracketOpen, bracketClose - bracketOpen + 1);
-
-    std::size_t p = 0;
-    while ((p = arrayBody.find('{', p)) != std::string::npos)
-    {
-        std::size_t e = arrayBody.find('}', p + 1);
-        if (e == std::string::npos) break;
-
-        std::string obj = arrayBody.substr(p, e - p + 1);
-        Contact c;
-        if (jsonString(obj, "name",    c.name)   &&
-            jsonString(obj, "station", c.station) &&
-            !c.name.empty() && !c.station.empty())
-        {
-            result.push_back(c);
-        }
-        p = e + 1;
-    }
-    return result;
-}
-
-
-void vacsCall(const std::string &station)
-{
-    static const char kHost[] = "127.0.0.1";
-    static const int  kPort   = 6809;
-
-    SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (sock == INVALID_SOCKET) return;
-
-    DWORD timeout = 1000;
-=======
     if (g_activeDataPosition.empty())
         return {};
 
@@ -730,38 +694,18 @@ SOCKET VacsManager::connectRemote()
     SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock == INVALID_SOCKET) return INVALID_SOCKET;
 
-    DWORD timeout = 250;
->>>>>>> Stashed changes
+    DWORD timeout = 50;
     setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char*>(&timeout), sizeof(timeout));
     setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&timeout), sizeof(timeout));
 
     sockaddr_in addr = {};
     addr.sin_family = AF_INET;
-<<<<<<< Updated upstream
-    addr.sin_port   = htons(static_cast<u_short>(kPort));
-    inet_pton(AF_INET, kHost, &addr.sin_addr);
-=======
     addr.sin_port   = htons(static_cast<u_short>(kVacsPort));
     inet_pton(AF_INET, kVacsHost, &addr.sin_addr);
->>>>>>> Stashed changes
 
     if (connect(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0)
     {
         closesocket(sock);
-<<<<<<< Updated upstream
-        return;
-    }
-
-    // WebSocket upgrade
-    char key[25];
-    snprintf(key, sizeof(key), "%08X%08X==", GetTickCount(), GetTickCount() ^ 0xDEADBEEF);
-    char req[512];
-    snprintf(req, sizeof(req),
-        "GET / HTTP/1.1\r\nHost: %s:%d\r\n"
-        "Upgrade: websocket\r\nConnection: Upgrade\r\n"
-        "Sec-WebSocket-Key: %s\r\nSec-WebSocket-Version: 13\r\n\r\n",
-        kHost, kPort, key);
-=======
         return INVALID_SOCKET;
     }
 
@@ -772,17 +716,10 @@ SOCKET VacsManager::connectRemote()
         "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
         "Sec-WebSocket-Version: 13\r\n\r\n",
         kVacsPath, kVacsHost, kVacsPort);
->>>>>>> Stashed changes
     send(sock, req, static_cast<int>(strlen(req)), 0);
 
     char resp[512] = {};
     recv(sock, resp, sizeof(resp) - 1, 0);
-<<<<<<< Updated upstream
-    if (!strstr(resp, "101")) { closesocket(sock); return; }
-
-    // Masked text frame: {"type":"call","callsign":"<station>"}
-    std::string payload = "{\"type\":\"call\",\"callsign\":\"" + station + "\"}";
-=======
     if (!strstr(resp, "101"))
     {
         closesocket(sock);
@@ -828,15 +765,10 @@ bool VacsManager::sendRemoteCommand(SOCKET sock,
 
 bool VacsManager::sendTextFrame(SOCKET sock, const std::string &payload)
 {
->>>>>>> Stashed changes
     size_t len = payload.size();
 
     std::vector<unsigned char> frame;
     frame.push_back(0x81);
-<<<<<<< Updated upstream
-    frame.push_back(static_cast<unsigned char>(0x80 | (len <= 125 ? len : 126)));
-    if (len > 125) { frame.push_back((len >> 8) & 0xFF); frame.push_back(len & 0xFF); }
-=======
     if (len <= 125)
     {
         frame.push_back(static_cast<unsigned char>(0x80 | len));
@@ -851,18 +783,12 @@ bool VacsManager::sendTextFrame(SOCKET sock, const std::string &payload)
     {
         return false;
     }
->>>>>>> Stashed changes
 
     unsigned char mask[4] = { 0xAB, 0xCD, 0xEF, 0x01 };
     for (auto m : mask) frame.push_back(m);
     for (size_t i = 0; i < len; ++i)
         frame.push_back(static_cast<unsigned char>(payload[i]) ^ mask[i % 4]);
 
-<<<<<<< Updated upstream
-    send(sock, reinterpret_cast<const char*>(frame.data()), static_cast<int>(frame.size()), 0);
-    recv(sock, resp, sizeof(resp) - 1, 0);
-    closesocket(sock);
-=======
     int sent = send(sock, reinterpret_cast<const char*>(frame.data()), static_cast<int>(frame.size()), 0);
     return sent == static_cast<int>(frame.size());
 }
@@ -917,7 +843,6 @@ void vacsCall(const std::string &station)
 {
     static VacsManager manager;
     manager.StartVacsCall(station);
->>>>>>> Stashed changes
 }
 
 } // namespace Indra

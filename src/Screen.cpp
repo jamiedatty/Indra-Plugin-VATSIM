@@ -71,16 +71,13 @@ public:
           hasUnreadMessages_(false),
           unreadFlashTick_(0),
           vacsShowMenu_(false),
-<<<<<<< Updated upstream
-          vacsRole_(0)
-=======
           vacsRole_(0),
           vacsCallState_(VacsCallUiState::Idle),
           vacsLastPollTick_(0),
+          vacsFailedPollTick_(0),
           vacsDeferredPoll_(false),
           vacsDeferredPollTick_(0),
           zoomLastCalcTick_(0)
->>>>>>> Stashed changes
     {
         popupRect_ = {120, 120, 550, 430};
         messagesPopupRect_ = {120, 120, 550, 430};
@@ -255,8 +252,6 @@ public:
             {
                 vacsShowMenu_ = !(vacsShowMenu_ && vacsRole_ == role);
                 vacsRole_     = role;
-<<<<<<< Updated upstream
-=======
                 if (vacsShowMenu_)
                 {
                     updateDataPosition();
@@ -268,25 +263,6 @@ public:
                 {
                     vacsDeferredPoll_ = false;
                 }
->>>>>>> Stashed changes
-                RequestRefresh();
-                return;
-            }
-            if (s.size() > 5 && s.substr(0, 5) == "VACS_")
-            {
-                int idx = atoi(s.c_str() + 5);
-                if (idx >= 0 && idx < static_cast<int>(vacsContacts_.size()))
-<<<<<<< Updated upstream
-                    vacsCall(vacsContacts_[idx].station);
-=======
-                {
-                    if (isCurrentVacsTarget(vacsContacts_[idx].station))
-                        vacsManager_.EndCurrentCall();
-                    else
-                        vacsManager_.StartVacsCall(vacsContacts_[idx].station);
-                }
-                vacsLastPollTick_ = 0;
-                pollVacsState(true);
                 RequestRefresh();
                 return;
             }
@@ -314,20 +290,27 @@ public:
                 {
                     GetPlugIn()->OpenPopupEdit(area, FN_VACS_CUSTOM, "");
                 }
->>>>>>> Stashed changes
+                return;
+            }
+            if (s.size() > 5 && s.substr(0, 5) == "VACS_" &&
+                std::isdigit(static_cast<unsigned char>(s[5])))
+            {
+                int idx = atoi(s.c_str() + 5);
+                if (idx >= 0 && idx < static_cast<int>(vacsContacts_.size()))
+                {
+                    if (isCurrentVacsTarget(vacsContacts_[idx].station))
+                        vacsManager_.EndCurrentCall();
+                    else
+                        vacsManager_.StartVacsCall(vacsContacts_[idx].station);
+                }
+                vacsLastPollTick_ = 0;
+                pollVacsState(true);
+                RequestRefresh();
                 return;
             }
         }
 
-<<<<<<< Updated upstream
-        static const std::vector<std::string> viewButtons = {"S","0","1/2","1","3","5","8","VIEW1","VIEW2"};
-        bool isView = false;
-        for (const auto &vb : viewButtons)
-            if (s == vb) { isView = true; break; }
-        if (isView)
-=======
         if (isViewButton(s))
->>>>>>> Stashed changes
         {
             if (button == EuroScopePlugIn::BUTTON_LEFT &&
                 pressStartTime_.find(s) == pressStartTime_.end())
@@ -337,12 +320,6 @@ public:
 
         if (button == EuroScopePlugIn::BUTTON_LEFT)
         {
-            if (qdmMode_ && s != "QDM")
-            {
-                handleQDMClick(pt);
-                return;
-            }
-
             if (messagesPopupVisible_ && handleMessagesPopupClick(s, pt, area))
                 return;
 
@@ -602,12 +579,11 @@ protected:
     std::vector<Contact> vacsContacts_;
     bool                 vacsShowMenu_ = false;
     int                  vacsRole_     = 0;
-<<<<<<< Updated upstream
-=======
     VacsManager          vacsManager_;
     VacsCallStatus       vacsStatus_;
     VacsCallUiState      vacsCallState_ = VacsCallUiState::Idle;
     DWORD                vacsLastPollTick_ = 0;
+    DWORD                vacsFailedPollTick_ = 0;
     bool                 vacsDeferredPoll_ = false;
     DWORD                vacsDeferredPollTick_ = 0;
     DWORD                zoomLastCalcTick_ = 0;
@@ -622,7 +598,6 @@ protected:
         const char *msg = screenObjectStrings_.back().c_str();
         AddScreenObject(objectType, id, area, moveable, msg);
     }
->>>>>>> Stashed changes
 
     void loadBool(const char *key, bool &value)
     {
@@ -735,20 +710,28 @@ protected:
         }
 
         DWORD interval = 30000;
-        if (vacsShowMenu_)
-            interval = 5000;
         if (vacsCallState_ == VacsCallUiState::IncomingRinging ||
             vacsCallState_ == VacsCallUiState::OutgoingRinging)
             interval = 3000;
         else if (vacsCallState_ == VacsCallUiState::Active)
             interval = 10000;
 
+        if (!force && vacsFailedPollTick_ != 0 && now - vacsFailedPollTick_ < 60000)
+            return;
+
         if (!force && vacsLastPollTick_ != 0 && now - vacsLastPollTick_ < interval)
             return;
 
         vacsLastPollTick_ = now;
         if (vacsManager_.RefreshCallStatus(vacsStatus_))
+        {
             vacsCallState_ = vacsStatus_.state;
+            vacsFailedPollTick_ = 0;
+        }
+        else
+        {
+            vacsFailedPollTick_ = now;
+        }
     }
 
     std::string normalizedCallsign(std::string value) const
@@ -901,7 +884,7 @@ protected:
 
         RECT status = { bar.right - 116, bar.top + 8, bar.right - 8, bar.top + 32 };
         SetTextColor(hdc, kColBtnText);
-        DrawTextA(hdc, "Indra APC", -1, &status, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+        DrawTextA(hdc, "vINDRA", -1, &status, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
     }
 
     void drawBottomBar(HDC hdc)
@@ -929,10 +912,6 @@ protected:
             SelectObject(hdc, old);
         };
 
-<<<<<<< Updated upstream
-        drawVacsGroup(hdc, x, y0, colW, bh);
-        x += colW + gap;
-=======
         int vacsWidth = drawVacsGroup(hdc, x, y0, colW, bh);
         x += vacsWidth + gap;
 
@@ -942,7 +921,6 @@ protected:
             return;
         }
 
->>>>>>> Stashed changes
         drawVerticalGroup(hdc, x, y0, colW, bh, "ARR", "DEP", "FPL",
                           filter_ == "ARRIVALS", filter_ == "DEPARTURES", false);
         x += colW + gap;
@@ -1068,29 +1046,6 @@ protected:
         drawBottomRightBranding(hdc, bar);
     }
 
-<<<<<<< Updated upstream
-    void drawVacsGroup(HDC hdc, int x, int y, int colW, int totalH)
-    {
-        int h3 = totalH / 3;
-        drawBtn(hdc, x, y,      colW, h3, "EXECUTIVE", vacsShowMenu_ && vacsRole_ == 0);
-        drawBtn(hdc, x, y + h3, colW, h3, "PLANNER",   vacsShowMenu_ && vacsRole_ == 1);
-        if (vacsShowMenu_)
-            drawCallMenu(hdc, x + colW + kBtnGap, y, totalH);
-    }
-
-    void drawCallMenu(HDC hdc, int menuX, int menuY, int totalH)
-    {
-        const int btnW = 90, btnH = totalH / 3;
-        for (int i = 0; i < static_cast<int>(vacsContacts_.size()); ++i)
-        {
-            int bx = menuX + (i % 2) * (btnW + kBtnGap);
-            int by = menuY + (i / 2) * (btnH + kBtnGap);
-            std::string id = "VACS_" + std::to_string(i);
-            drawBtn(hdc, bx, by, btnW, btnH, vacsContacts_[i].name.c_str(), false);
-            AddScreenObject(kObjButton, id.c_str(), {bx, by, bx+btnW, by+btnH},
-                            false, vacsContacts_[i].station.c_str());
-        }
-=======
     int drawVacsGroup(HDC hdc, int x, int y, int colW, int totalH)
     {
         int h2 = totalH / 2;
@@ -1154,7 +1109,6 @@ protected:
         drawBtnEx(hdc, x, y + h2, colW, h2, "VACS_CUSTOM", customLabel.c_str(),
                   false, customFace, customText);
 
->>>>>>> Stashed changes
     }
 
         void drawVerticalGroup(HDC hdc, int x, int y, int w, int totalH,
@@ -1296,10 +1250,10 @@ protected:
 
     void drawBottomRightBranding(HDC hdc, const RECT &bar)
     {
-        const int w = 150;
+        const int w = 170;
         const int h = 54;
-        RECT box = { bar.right - w - 10, bar.top + (rectH(bar) - h) / 2,
-                     bar.right - 10, bar.top + (rectH(bar) + h) / 2 };
+        RECT box = { bar.right - w - 28, bar.top + (rectH(bar) - h) / 2,
+                     bar.right - 28, bar.top + (rectH(bar) + h) / 2 };
 
         SetBkMode(hdc, TRANSPARENT);
         HPEN pen = cachedPen(rgb(168, 170, 154));
@@ -1326,8 +1280,8 @@ protected:
         HFONT logoFont = cachedLogoFont();
         HFONT oldFont = static_cast<HFONT>(SelectObject(hdc, logoFont));
         SetTextColor(hdc, rgb(218, 216, 196));
-        RECT textRect = { box.left + 66, box.top + 2, box.right, box.bottom - 2 };
-        DrawTextA(hdc, "Indra", -1, &textRect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+        RECT textRect = { box.left + 62, box.top + 2, box.right, box.bottom - 2 };
+        DrawTextA(hdc, "vINDRA", -1, &textRect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 
         SelectObject(hdc, oldFont);
         SelectObject(hdc, oldPen);
@@ -1666,17 +1620,14 @@ protected:
         else if (s == "ELW")             toggleLatchedButton(elwEnabled_, "ELW");
         else if (s == "RBL")             toggleLatchedButton(rblEnabled_, "RBL");
         else if (s == "OBI")             toggleLatchedButton(obiEnabled_, "OBI");
-        else if (s == "DATBLK")          showTagFamilyPicker(area);
+        else if (s == "DATBLK")          openEuroScopeDisplaySettings();
         else if (s == "BRIGHT")          toggleLatchedButton(brightEnabled_, "Bright mode");
         else if (s == "F 3D")            toggleLatchedButton(f3dEnabled_, "F 3D");
         else if (s == "RBL ALM")         toggleLatchedButton(rblAlarmEnabled_, "RBL alarm");
         else if (s == "OVERLAP")         toggleLatchedButton(overlapEnabled_, "Overlap");
         else if (s == "FREETEXT")
         {
-            showFreeText_ = !showFreeText_;
-            applySectorType(EuroScopePlugIn::SECTOR_ELEMENT_FREE_TEXT, showFreeText_);
-            RefreshMapContent();
-            message(showFreeText_ ? "Free text display ON" : "Free text display OFF");
+            openTopSkyOpText2(pt, area);
         }
         else if (s == "FINDER")          showFinderPopup(area);
         else if (s == "SSR F")           showSSRFPopup(area);
@@ -1894,21 +1845,28 @@ protected:
 
     void toggleQDMMode()
     {
-        if (qdmMode_)
-        {
-            qdmMode_ = false;
-            qdmFirstClick_ = false;
-            qdmLineValid_ = false;
-            message("QDM mode OFF");
-        }
-        else
-        {
-            qdmMode_ = true;
-            qdmFirstClick_ = false;
-            qdmLineValid_ = false;
-            message("QDM mode ON \x96 click first point on radar");
-        }
+        qdmMode_ = false;
+        qdmFirstClick_ = false;
+        qdmLineValid_ = false;
+        sendEuroScopeShortcut(VK_MENU, 'Q');
+        message("EuroScope QDM armed");
         RequestRefresh();
+    }
+
+    void sendEuroScopeShortcut(WORD modifier, WORD keyCode)
+    {
+        INPUT inputs[4] = {};
+        inputs[0].type = INPUT_KEYBOARD;
+        inputs[0].ki.wVk = modifier;
+        inputs[1].type = INPUT_KEYBOARD;
+        inputs[1].ki.wVk = keyCode;
+        inputs[2].type = INPUT_KEYBOARD;
+        inputs[2].ki.wVk = keyCode;
+        inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
+        inputs[3].type = INPUT_KEYBOARD;
+        inputs[3].ki.wVk = modifier;
+        inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
+        SendInput(4, inputs, sizeof(INPUT));
     }
 
     void handleQDMClick(POINT clickPt)
@@ -1958,6 +1916,15 @@ protected:
     void openDisplaySettings()
     {
         showDisplaySettingsPicker(bottomBarArea());
+    }
+
+    void openEuroScopeDisplaySettings()
+    {
+        if (invokeEuroScopeMenu({"display settings"}))
+            return;
+        if (invokeEuroScopeMenu({"other settings", "display"}))
+            return;
+        message("DATBLK: Open Display Settings, then choose Tag family.");
     }
 
     void openConnectionDialog(POINT pt, RECT area)
@@ -2286,6 +2253,24 @@ protected:
         EuroScopePlugIn::CFlightPlan fp = aselFp();
         if (!fp.IsValid()) { message("No selected aircraft for SEP."); return; }
         invokeTopSkyFn(fp.GetCallsign(), TopSky::INVOKE_SEP_TOOL_WITH_VSEP, pt, area);
+    }
+
+    void openTopSkyOpText2(POINT pt, RECT area)
+    {
+        EuroScopePlugIn::CFlightPlan fp = aselFp();
+        if (!fp.IsValid()) { message("FREETEXT: No ASEL aircraft selected."); return; }
+        const char *cs = fp.GetCallsign();
+        GetPlugIn()->SetASELAircraft(fp);
+        StartTagFunction(
+            cs,
+            nullptr,
+            EuroScopePlugIn::TAG_ITEM_TYPE_CALLSIGN,
+            cs,
+            kTopSkyPluginName,
+            TopSky::EDIT_OP_TEXT2,
+            pt,
+            area
+        );
     }
 
     void showFinderPopup(RECT area) { GetPlugIn()->OpenPopupEdit(area, FN_FINDER, ""); }
