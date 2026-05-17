@@ -52,7 +52,6 @@ public:
         RegisterTagItemFunction("Load View 3",     FN_LOAD_VIEW_3);
         RegisterTagItemFunction("Load View 5",     FN_LOAD_VIEW_5);
         RegisterTagItemFunction("Load View 8",     FN_LOAD_VIEW_8);
-        RegisterTagItemFunction("Messages Center", FN_MESSAGES_CENTER);
         RegisterTagItemFunction("Messages Send",   FN_MESSAGES_SEND);
         RegisterTagItemFunction("Messages New DM", FN_MESSAGES_NEW_DM);
         RegisterTagItemFunction("VACS Custom Call", FN_VACS_CUSTOM);
@@ -86,31 +85,14 @@ public:
                                 double frequency,
                                 const char *chatMessage) override
     {
-        char line[512];
-        snprintf(line, sizeof(line), "[%.3f] %s: %s",
-                 frequency, safe(senderCallsign), safe(chatMessage));
-        rememberMessage(line);
-        if (senderCallsign && chatMessage)
-        {
-            addChatMessage(senderCallsign, "Me", chatMessage, false);
-        }
+        (void)senderCallsign; (void)frequency; (void)chatMessage;
     }
 
     void OnCompilePrivateChat(const char *senderCallsign,
                               const char *receiverCallsign,
                               const char *chatMessage) override
     {
-        char line[512];
-        snprintf(line, sizeof(line), "[PRIV] %s->%s: %s",
-                 safe(senderCallsign), safe(receiverCallsign), safe(chatMessage));
-        rememberMessage(line);
-        if (senderCallsign && receiverCallsign && chatMessage)
-        {
-            EuroScopePlugIn::CController me = ControllerMyself();
-            std::string myCallsign = me.IsValid() ? me.GetCallsign() : "";
-            bool fromMe = !myCallsign.empty() && _stricmp(senderCallsign, myCallsign.c_str()) == 0;
-            addChatMessage(senderCallsign, receiverCallsign, chatMessage, fromMe);
-        }
+        (void)senderCallsign; (void)receiverCallsign; (void)chatMessage;
     }
 
     void OnFunctionCall(int functionId, const char *itemString,

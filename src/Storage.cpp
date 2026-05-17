@@ -366,38 +366,7 @@ void setActiveDataPosition(const std::string &position)
     g_activeDataPosition = normalizeCallsign(position);
 }
 
-std::map<std::string, std::string>              g_metars;
-std::vector<std::string>                        g_messages;
-std::map<std::string, std::vector<ChatMessage>> g_chatHistory;
-
-bool g_newMessageArrived = false;
-
-void rememberMessage(const std::string &value)
-{
-    g_messages.push_back(value);
-    if (g_messages.size() > 30)
-        g_messages.erase(g_messages.begin());
-}
-
-void addChatMessage(const std::string &sender,
-                    const std::string &receiver,
-                    const std::string &msg,
-                    bool fromMe)
-{
-    ChatMessage cm;
-    cm.sender   = sender;
-    cm.receiver = receiver;
-    cm.message  = msg;
-    cm.fromMe   = fromMe;
-    char timeBuf[20];
-    SYSTEMTIME st;
-    GetLocalTime(&st);
-    snprintf(timeBuf, sizeof(timeBuf), "%02d:%02d", st.wHour, st.wMinute);
-    cm.time = timeBuf;
-    std::string contactKey = fromMe ? receiver : sender;
-    g_chatHistory[contactKey].push_back(cm);
-    if (!fromMe) g_newMessageArrived = true;
-}
+std::map<std::string, std::string> g_metars;
 
 std::vector<ViewDef> loadViewsJson(const std::string &filename)
 {
@@ -630,6 +599,22 @@ bool VacsManager::RefreshCallStatus(VacsCallStatus &status)
         status.callId = activeCallId_;
         status.target = activeTarget_;
         return true;
+    }
+
+    if (activeCall_)
+    {
+        auto activeIt = session.find("activeCall");
+        bool sessionHasActive = (activeIt != session.end() && activeIt->is_object());
+        if (!sessionHasActive)
+        {
+            activeCallId_.clear();
+            activeTarget_.clear();
+            activeCall_ = false;
+            status.state = VacsCallUiState::Idle;
+            status.callId.clear();
+            status.target.clear();
+            return true;
+        }
     }
 
     status.state = activeCall_ ? VacsCallUiState::Active : VacsCallUiState::Idle;
