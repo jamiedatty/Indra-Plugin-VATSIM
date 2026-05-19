@@ -11,7 +11,7 @@
 ---
 ### vacs
 
-The main difference between the Release and Beta versions as of version `0.1.4` is that the beta version has vacs support,
+The main difference between the Release and Beta versions as of version `1.0.1` is that the beta version has vacs support,
 
 in order for this to work the user must have vacs open with **remote control enabled**
 
