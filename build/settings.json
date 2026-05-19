@@ -1,0 +1,34 @@
+{
+  "DAAG_TWR": [
+    {
+      "name": "DAAG_TWR",
+      "station": "DAAG_TWR"
+    },
+    {
+      "name": "DAAA_NC_CTR",
+      "station": "DAAA_NC_CTR"
+    },
+    {
+      "name": "OOMS_APP",
+      "station": "OOMS_APP"
+    },
+    {
+      "name": "OOMS_APP",
+      "station": "OOMS_APP"
+    },
+    {
+      "name": "GULF",
+      "station": "GULF_E_FSS"
+    }
+  ],
+  "DAUE_TWR": [
+    {
+      "name": "GULF",
+      "station": "GULF_E_FSS"
+    },
+        {
+      "name": "OERK",
+      "station": "OERK_E_TWR"
+    }
+  ]
+}

@@ -1,6 +1,21 @@
 @echo off
 echo Compiling Indra APC Plugin...
 
+where cl >nul 2>nul
+if errorlevel 1 (
+    if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars32.bat" (
+        call "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars32.bat"
+    ) else if exist "%ProgramFiles%\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars32.bat" (
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars32.bat"
+    )
+)
+
+where cl >nul 2>nul
+if errorlevel 1 (
+    echo MSVC compiler not found. Install Visual Studio Build Tools, or run from a Developer Command Prompt.
+    exit /b 2
+)
+
 set SOURCES=src\Plugin.cpp src\Screen.cpp src\Storage.cpp
 set OUTPUT=build\IndraApc.dll
 set ES_LIB=
@@ -30,10 +45,13 @@ cl /nologo /LD /MD /O2 /Oi /GL /EHsc ^
     /Fe"%OUTPUT%" ^
     %SOURCES% ^
     /link /SUBSYSTEM:WINDOWS /MACHINE:X86 /LTCG /OPT:REF /OPT:ICF /DLL ^
-    "%ES_LIB%" user32.lib gdi32.lib
+    /EXPORT:EuroScopePlugInInit=?EuroScopePlugInInit@@YAXPAPAVCPlugIn@EuroScopePlugIn@@@Z ^
+    /EXPORT:EuroScopePlugInExit=?EuroScopePlugInExit@@YAXXZ ^
+    "%ES_LIB%" user32.lib gdi32.lib ws2_32.lib
 
 if %errorlevel% == 0 (
     echo Compilation successful! Output: %OUTPUT%
 ) else (
     echo Compilation failed with error code %errorlevel%
+    exit /b %errorlevel%
 )

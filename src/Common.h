@@ -43,9 +43,6 @@ const COLORREF kColBtnHiEdge  = rgb(210, 213, 194);
 const COLORREF kColBtnShEdge  = rgb( 38,  40,  36);
 const COLORREF kColBtnText    = rgb(210, 213, 194);
 const COLORREF kColBarFrame   = rgb(180, 183, 168);
-const COLORREF kColPopupBg    = rgb( 55,  58,  55);
-const COLORREF kColPopupTitle = rgb( 52,  55,  50);
-
 constexpr int kBarH      = 80;
 constexpr int kBtnH      = 56;
 constexpr int kBtnMargin = 8;
@@ -73,7 +70,6 @@ enum FunctionId
     FN_DATBLK,
     FN_DISPLAY_TOGGLE,
     FN_QDM_MODE,
-    FN_METEO,
     FN_MTCD_TOGGLE,
     FN_ALARM_TOGGLE,
     FN_SECTORS,
@@ -99,11 +95,9 @@ enum FunctionId
     FN_LOAD_VIEW_3,
     FN_LOAD_VIEW_5,
     FN_LOAD_VIEW_8,
-    FN_MESSAGES_CENTER,
-    FN_MESSAGES_SEND,
-    FN_MESSAGES_NEW_DM,
     FN_ZOOM_NM_EDIT,
-    FN_SEP_TOOL
+    FN_SEP_TOOL,
+    FN_VACS_CUSTOM
 };
 
 struct ViewDef
@@ -115,25 +109,5 @@ struct ViewDef
     int         zoomNm    = 120;
     bool        hasCenter = false;
 };
-
-struct ChatMessage
-{
-    std::string sender;
-    std::string receiver;
-    std::string message;
-    std::string time;
-    bool        fromMe;
-};
-
-extern std::map<std::string, std::string>              g_metars;
-extern std::vector<std::string>                        g_messages;
-extern std::map<std::string, std::vector<ChatMessage>> g_chatHistory;
-extern bool g_newMessageArrived;
-
-void rememberMessage(const std::string &value);
-void addChatMessage(const std::string &sender,
-                    const std::string &receiver,
-                    const std::string &msg,
-                    bool fromMe = false);
 
 } // namespace Indra

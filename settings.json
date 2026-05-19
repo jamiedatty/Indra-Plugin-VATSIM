@@ -1,0 +1,16 @@
+{
+  "contacts": [
+    {
+      "name": "DAAG_TWR",
+      "station": "DAAG_TWR"
+    },
+    {
+      "name": "DAAA_NC_CTR",
+      "station": "DAAA_NC_CTR"
+    },
+    {
+      "name": "DAAG_GND",
+      "station": "DAAG_GND"
+    }
+  ]
+}

@@ -10,7 +10,7 @@ class IndraApcPlugin : public EuroScopePlugIn::CPlugIn
 public:
     IndraApcPlugin()
         : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE,
-                  kPluginName, "0.1.4",
+                  kPluginName, "1.0.1",
                   "Maghreb vACC",
                   "GPL v3")
     {
@@ -26,7 +26,6 @@ public:
         RegisterTagItemFunction("DATBLK",          FN_DATBLK);
         RegisterTagItemFunction("Display Toggle",  FN_DISPLAY_TOGGLE);
         RegisterTagItemFunction("QDM Mode",        FN_QDM_MODE);
-        RegisterTagItemFunction("METEO",           FN_METEO);
         RegisterTagItemFunction("MTCD Toggle",     FN_MTCD_TOGGLE);
         RegisterTagItemFunction("Alarm Toggle",    FN_ALARM_TOGGLE);
         RegisterTagItemFunction("Sectors",         FN_SECTORS);
@@ -52,9 +51,7 @@ public:
         RegisterTagItemFunction("Load View 3",     FN_LOAD_VIEW_3);
         RegisterTagItemFunction("Load View 5",     FN_LOAD_VIEW_5);
         RegisterTagItemFunction("Load View 8",     FN_LOAD_VIEW_8);
-        RegisterTagItemFunction("Messages Center", FN_MESSAGES_CENTER);
-        RegisterTagItemFunction("Messages Send",   FN_MESSAGES_SEND);
-        RegisterTagItemFunction("Messages New DM", FN_MESSAGES_NEW_DM);
+        RegisterTagItemFunction("VACS Custom Call", FN_VACS_CUSTOM);
     }
 
     ~IndraApcPlugin() override {}
@@ -72,47 +69,7 @@ public:
     bool OnCompileCommand(const char *cmd) override
     {
         if (!startsWith(cmd, ".indra")) return false;
-        DisplayUserMessage(kPluginName, "INDRA",
-            "Indra APC Plugin v0.1.5 three-row bottom bar active.",
-            true, true, true, false, false);
         return true;
-    }
-
-    void OnNewMetarReceived(const char *station, const char *fullMetar) override
-    {
-        if (station && *station && fullMetar)
-            g_metars[station] = fullMetar;
-    }
-
-    void OnCompileFrequencyChat(const char *senderCallsign,
-                                double frequency,
-                                const char *chatMessage) override
-    {
-        char line[512];
-        snprintf(line, sizeof(line), "[%.3f] %s: %s",
-                 frequency, safe(senderCallsign), safe(chatMessage));
-        rememberMessage(line);
-        if (senderCallsign && chatMessage)
-        {
-            addChatMessage(senderCallsign, "Me", chatMessage, false);
-        }
-    }
-
-    void OnCompilePrivateChat(const char *senderCallsign,
-                              const char *receiverCallsign,
-                              const char *chatMessage) override
-    {
-        char line[512];
-        snprintf(line, sizeof(line), "[PRIV] %s->%s: %s",
-                 safe(senderCallsign), safe(receiverCallsign), safe(chatMessage));
-        rememberMessage(line);
-        if (senderCallsign && receiverCallsign && chatMessage)
-        {
-            EuroScopePlugIn::CController me = ControllerMyself();
-            std::string myCallsign = me.IsValid() ? me.GetCallsign() : "";
-            bool fromMe = !myCallsign.empty() && _stricmp(senderCallsign, myCallsign.c_str()) == 0;
-            addChatMessage(senderCallsign, receiverCallsign, chatMessage, fromMe);
-        }
     }
 
     void OnFunctionCall(int functionId, const char *itemString,
@@ -131,15 +88,9 @@ public:
         }
         else if (functionId == FN_FINDER && itemString && *itemString)
         {
-            DisplayUserMessage(kPluginName, "INDRA",
-                ("Finder: " + std::string(itemString)).c_str(),
-                true, true, true, false, false);
         }
         else if (functionId == FN_SSRF && itemString && *itemString)
         {
-            DisplayUserMessage(kPluginName, "INDRA",
-                ("SSR F: " + std::string(itemString)).c_str(),
-                true, true, true, false, false);
         }
     }
 
