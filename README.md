@@ -4,13 +4,6 @@
 
 ---
 
-### Currently know bugs
-- Popout windows being partially illegible (Will change to black text)
-- 'CEN' Button not working
-- Unable to 'Answer' Incoming vacs calls 
-
----
-
 ### bug reports:
 - Within Maghreb vACC - Use 'Ops suggestions' thread
 - Outside of Maghreb vACC - Make a issue using the bug report template
@@ -21,6 +14,10 @@
 The main difference between the Release and Beta versions as of version `0.1.4` is that the beta version has vacs support,
 
 in order for this to work the user must have vacs open with **remote control enabled**
+
+The way you do this is by going Settings -> Advanced settings -> and ensure it looks like the image bellow, if there is any issues with the base 0.0.0.0:9600, please change to 127.0.0.1:9600 (There shouldnt be)
+<img width="366" height="112" alt="image" src="https://github.com/user-attachments/assets/ffe0cdac-5c22-4446-b869-ff13bbb493bc" />
+
 
 An example image is shown bellow with the usage of each button
 
